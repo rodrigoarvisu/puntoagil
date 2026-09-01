@@ -32,6 +32,9 @@ public class Producto {
     @Column(name = "stock_minimo", nullable = false)
     private Integer stockMinimo;
 
+    @Column(unique = true)
+    private String codigoBarras;
+
     //Constructores
     public Producto() {}
 
@@ -56,4 +59,7 @@ public class Producto {
 
     public Integer getStockMinimo() { return stockMinimo; }
     public void setStockMinimo(Integer stockMinimo) { this.stockMinimo = stockMinimo; }
+
+    public String getCodigoBarras() { return codigoBarras; }
+    public void setCodigoBarras(String codigoBarras) { this.codigoBarras = codigoBarras; }
 }
