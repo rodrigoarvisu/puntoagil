@@ -14,6 +14,10 @@ public class Venta {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    public enum MetodoPago {
+        EFECTIVO, TARJETA, TRANSFERENCIA
+    }
+
     @ManyToOne
     @JoinColumn(name = "usuario_id", nullable = false)
     private Usuario usuario;
@@ -23,6 +27,10 @@ public class Venta {
 
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal total;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "metodo_pago", nullable = false)
+    private MetodoPago metodoPago;
 
     @OneToMany(mappedBy = "venta", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<DetalleVenta> detalles = new ArrayList<>();
@@ -43,4 +51,7 @@ public class Venta {
 
     public List<DetalleVenta> getDetalles() { return detalles; }
     public void setDetalles(List<DetalleVenta> detalles) { this.detalles = detalles; }
+
+    public MetodoPago getMetodoPago() { return metodoPago; }
+    public void setMetodoPago(MetodoPago metodoPago) { this.metodoPago = metodoPago; }
 }

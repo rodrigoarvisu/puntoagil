@@ -1,5 +1,6 @@
 package puntoagil.service;
 
+import puntoagil.entity.AperturaCaja;
 import puntoagil.entity.CorteCaja;
 import puntoagil.entity.Usuario;
 import puntoagil.entity.Venta;
@@ -21,15 +22,25 @@ public class CorteCajaService {
     @Autowired
     private VentaService ventaService;
 
+    @Autowired
+    private AperturaCajaService aperturaCajaService;
+
     @Transactional
     public CorteCaja generarCorte(Usuario usuario, LocalDateTime inicio, LocalDateTime fin, BigDecimal efectivoContado) {
+        AperturaCaja apertura = aperturaCajaService.obtenerAperturaActivaObligatoria();
+
         List<Venta> ventasDelPeriodo = ventaService.buscarPorRangoFechas(inicio, fin);
 
         BigDecimal totalVentas = BigDecimal.ZERO;
+        BigDecimal totalVentasEfectivo = BigDecimal.ZERO;
         BigDecimal totalUtilidad = BigDecimal.ZERO;
 
         for (Venta venta : ventasDelPeriodo) {
             totalVentas = totalVentas.add(venta.getTotal());
+
+            if (venta.getMetodoPago() == Venta.MetodoPago.EFECTIVO) {
+                totalVentasEfectivo = totalVentasEfectivo.add(venta.getTotal());
+            }
 
             for (var detalle : venta.getDetalles()) {
                 BigDecimal costoLinea = detalle.getProducto().getCosto()
@@ -39,16 +50,22 @@ public class CorteCajaService {
             }
         }
 
+        BigDecimal efectivoEsperado = apertura.getMontoInicial().add(totalVentasEfectivo);
+
         CorteCaja corte = new CorteCaja();
         corte.setUsuario(usuario);
         corte.setFecha(LocalDateTime.now());
         corte.setTotalVentas(totalVentas);
         corte.setTotalUtilidad(totalUtilidad);
-        corte.setEfectivoEsperado(totalVentas);
+        corte.setEfectivoEsperado(efectivoEsperado);
         corte.setEfectivoContado(efectivoContado);
-        corte.setDiferencia(efectivoContado.subtract(totalVentas));
+        corte.setDiferencia(efectivoContado.subtract(efectivoEsperado));
 
-        return corteCajaRepository.save(corte);
+        CorteCaja corteGuardado = corteCajaRepository.save(corte);
+
+        aperturaCajaService.cerrarAperturaActiva(); // cierra la caja automáticamente al generar el corte
+
+        return corteGuardado;
     }
 
     public List<CorteCaja> listarTodos() {

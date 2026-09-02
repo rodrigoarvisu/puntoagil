@@ -23,8 +23,13 @@ public class VentaService {
     @Autowired
     private ProductoRepository productoRepository;
 
+    @Autowired
+    private AperturaCajaService aperturaCajaService;
+
     @Transactional
     public Venta registrarVenta(Venta venta) {
+        aperturaCajaService.obtenerAperturaActivaObligatoria();
+
         BigDecimal total = BigDecimal.ZERO;
 
         for (DetalleVenta detalle : venta.getDetalles()) {
