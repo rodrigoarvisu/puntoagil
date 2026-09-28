@@ -4,7 +4,6 @@ import puntoagil.dto.LoginResponse;
 import puntoagil.entity.Usuario;
 import puntoagil.repository.UsuarioRepository;
 import puntoagil.security.JwtUtil;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -15,14 +14,17 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/auth")
 public class AuthController {
 
-    @Autowired
     private AuthenticationManager authenticationManager;
-
-    @Autowired
     private UsuarioRepository usuarioRepository;
-
-    @Autowired
     private JwtUtil jwtUtil;
+
+    public AuthController( AuthenticationManager authenticationManager,
+                           UsuarioRepository usuarioRepository,
+                           JwtUtil jwtUtil) {
+        this.authenticationManager = authenticationManager;
+        this. usuarioRepository = usuarioRepository;
+        this. jwtUtil = jwtUtil;
+    }
 
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> login(@RequestBody LoginRequest request) {

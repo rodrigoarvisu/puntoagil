@@ -1,6 +1,5 @@
 package puntoagil.controller;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import puntoagil.entity.Categoria;
@@ -12,8 +11,11 @@ import java.util.List;
 @RequestMapping("/api/categorias")
 public class CategoriaController {
 
-    @Autowired
     private CategoriaService categoriaService;
+
+    public CategoriaController(CategoriaService categoriaService) {
+        this.categoriaService = categoriaService;
+    }
 
     @GetMapping
     public List<Categoria> listarTodas() {

@@ -4,8 +4,8 @@ import puntoagil.entity.AperturaCaja;
 import puntoagil.entity.CorteCaja;
 import puntoagil.entity.Usuario;
 import puntoagil.entity.Venta;
+import puntoagil.repository.AperturaCajaRepository;
 import puntoagil.repository.CorteCajaRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -16,14 +16,19 @@ import java.util.List;
 @Service
 public class CorteCajaService {
 
-    @Autowired
     private CorteCajaRepository corteCajaRepository;
 
-    @Autowired
     private VentaService ventaService;
 
-    @Autowired
     private AperturaCajaService aperturaCajaService;
+
+    public CorteCajaService(CorteCajaRepository corteCajaRepository,
+                            VentaService ventaService,
+                            AperturaCajaService aperturaCajaService) {
+        this.corteCajaRepository = corteCajaRepository;
+        this.ventaService = ventaService;
+        this.aperturaCajaService = aperturaCajaService;
+    }
 
     @Transactional
     public CorteCaja generarCorte(Usuario usuario, LocalDateTime inicio, LocalDateTime fin, BigDecimal efectivoContado) {

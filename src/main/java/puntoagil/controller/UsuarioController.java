@@ -6,7 +6,6 @@ import puntoagil.dto.UsuarioResponse;
 import puntoagil.dto.UsuarioUpdateRequest;
 import puntoagil.entity.Usuario;
 import puntoagil.service.UsuarioService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -18,8 +17,11 @@ import java.util.List;
 @PreAuthorize("hasRole('ADMIN')")
 public class UsuarioController {
 
-    @Autowired
     private UsuarioService usuarioService;
+
+    public UsuarioController(UsuarioService usuarioService){
+        this.usuarioService = usuarioService;
+    }
 
     @GetMapping
     public ResponseEntity<List<UsuarioResponse>> listarTodos() {

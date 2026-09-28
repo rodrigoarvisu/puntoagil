@@ -2,7 +2,6 @@ package puntoagil.controller;
 
 import puntoagil.entity.Compra;
 import puntoagil.service.CompraService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -12,8 +11,11 @@ import java.util.List;
 @RequestMapping("/api/compras")
 public class CompraController {
 
-    @Autowired
     private CompraService compraService;
+
+    public CompraController(CompraService compraService) {
+        this.compraService = compraService;
+    }
 
     @GetMapping
     public List<Compra> listarTodas() {

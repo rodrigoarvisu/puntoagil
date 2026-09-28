@@ -1,6 +1,5 @@
 package puntoagil.controller;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import puntoagil.entity.Producto;
@@ -12,8 +11,11 @@ import java.util.List;
 @RequestMapping("/api/productos")
 public class ProductoController {
 
-    @Autowired
     private ProductoService productoService;
+
+    public ProductoController(ProductoService productoService) {
+        this.productoService = productoService;
+    }
 
     @GetMapping("/agotados")
     public List<Producto> agotados() {

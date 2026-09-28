@@ -3,7 +3,6 @@ package puntoagil.service;
 import puntoagil.entity.AperturaCaja;
 import puntoagil.entity.Usuario;
 import puntoagil.repository.AperturaCajaRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -14,8 +13,11 @@ import java.util.Optional;
 @Service
 public class AperturaCajaService {
 
-    @Autowired
     private AperturaCajaRepository aperturaCajaRepository;
+
+    public AperturaCajaService(AperturaCajaRepository aperturaCajaRepository) {
+        this.aperturaCajaRepository = aperturaCajaRepository;
+    }
 
     @Transactional
     public AperturaCaja abrirCaja(Usuario usuario, BigDecimal montoInicial) {

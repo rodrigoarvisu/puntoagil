@@ -1,6 +1,5 @@
 package puntoagil.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import puntoagil.entity.Producto;
 import puntoagil.repository.ProductoRepository;
@@ -10,8 +9,12 @@ import java.util.List;
 @Service
 public class ProductoService {
 
-    @Autowired
+
     private ProductoRepository productoRepository;
+
+    public ProductoService(ProductoRepository productoRepository) {
+        this.productoRepository = productoRepository;
+    }
 
     public List<Producto> listarTodos() {
         return productoRepository.findAll();

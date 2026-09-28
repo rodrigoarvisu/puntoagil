@@ -3,7 +3,6 @@ package puntoagil.controller;
 import puntoagil.entity.CorteCaja;
 import puntoagil.entity.Usuario;
 import puntoagil.service.CorteCajaService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -15,8 +14,11 @@ import java.util.List;
 @RequestMapping("/api/cortes-caja")
 public class CorteCajaController {
 
-    @Autowired
     private CorteCajaService corteCajaService;
+
+    public CorteCajaController(CorteCajaService corteCajaService) {
+        this.corteCajaService = corteCajaService;
+    }
 
     @GetMapping
     public List<CorteCaja> listarTodos() {

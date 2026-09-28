@@ -3,7 +3,6 @@ package puntoagil.controller;
 import puntoagil.entity.AperturaCaja;
 import puntoagil.entity.Usuario;
 import puntoagil.service.AperturaCajaService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -13,8 +12,11 @@ import java.math.BigDecimal;
 @RequestMapping("/api/apertura-caja")
 public class AperturaCajaController {
 
-    @Autowired
     private AperturaCajaService aperturaCajaService;
+
+    public AperturaCajaController(AperturaCajaService aperturaCajaService) {
+        this.aperturaCajaService = aperturaCajaService;
+    }
 
     @GetMapping("/activa")
     public ResponseEntity<?> obtenerActiva() {

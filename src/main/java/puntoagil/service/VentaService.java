@@ -1,7 +1,6 @@
 package puntoagil.service;
 
 import jakarta.transaction.Transactional;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import puntoagil.entity.DetalleVenta;
 import puntoagil.entity.Producto;
@@ -17,14 +16,19 @@ import java.util.List;
 @Service
 public class VentaService {
 
-    @Autowired
     private VentaRepository ventaRepository;
 
-    @Autowired
     private ProductoRepository productoRepository;
 
-    @Autowired
     private AperturaCajaService aperturaCajaService;
+
+    public VentaService(VentaRepository ventaRepository,
+                        ProductoRepository productoRepository,
+                        AperturaCajaService aperturaCajaService) {
+        this.ventaRepository = ventaRepository;
+        this.productoRepository = productoRepository;
+        this.aperturaCajaService = aperturaCajaService;
+    }
 
     @Transactional
     public Venta registrarVenta(Venta venta) {

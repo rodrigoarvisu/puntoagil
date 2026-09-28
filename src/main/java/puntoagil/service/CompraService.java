@@ -1,9 +1,6 @@
 package puntoagil.service;
 
-import jakarta.persistence.Transient;
 import jakarta.transaction.Transactional;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cglib.core.Local;
 import org.springframework.stereotype.Service;
 import puntoagil.entity.Compra;
 import puntoagil.entity.DetalleCompra;
@@ -18,11 +15,15 @@ import java.util.List;
 @Service
 public class CompraService {
 
-    @Autowired
     private CompraRepository compraRepository;
 
-    @Autowired
     private ProductoRepository productoRepository;
+
+    public CompraService(CompraRepository compraRepository,
+                         ProductoRepository productoRepository) {
+        this.compraRepository = compraRepository;
+        this.productoRepository = productoRepository;
+    }
 
     @Transactional
     public Compra registrarCompra(Compra compra) {
