@@ -1,6 +1,7 @@
 package puntoagil.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
 
@@ -14,7 +15,7 @@ public class DetalleVenta {
 
     @ManyToOne
     @JoinColumn(name = "venta_id", nullable = false)
-    @JsonIgnoreProperties("detalles")
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private Venta venta;
 
     @ManyToOne

@@ -1,5 +1,6 @@
 package puntoagil.repository;
 
+import org.springframework.data.jpa.repository.EntityGraph;
 import puntoagil.entity.Venta;
 import org.springframework.data.jpa.repository.JpaRepository;
 import java.time.LocalDateTime;
