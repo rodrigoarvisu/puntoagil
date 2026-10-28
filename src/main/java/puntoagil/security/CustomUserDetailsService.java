@@ -22,13 +22,14 @@ public class CustomUserDetailsService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        Usuario usuario = usuarioRepository.findByEmail(email)
-                .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado con email: " + email));
+        Usuario usuario = usuarioRepository.findByEmailIgnoreCase(email.trim())
+                .orElseThrow(() -> new UsernameNotFoundException("Credenciales inválidas"));
 
-        return new User(
-                usuario.getEmail(),
-                usuario.getPassword(),
-                List.of(new SimpleGrantedAuthority("ROLE_" + usuario.getRol().name()))
-        );
+        return User.builder()
+                .username(usuario.getEmail())
+                .password(usuario.getPassword())
+                .roles(usuario.getRol().name())      // agrega el prefijo ROLE_ solo
+                .disabled(!usuario.isActivo())       // si tu campo es Boolean: getActivo()
+                .build();
     }
 }
