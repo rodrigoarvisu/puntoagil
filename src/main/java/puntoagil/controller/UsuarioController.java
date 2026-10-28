@@ -1,10 +1,12 @@
 package puntoagil.controller;
 
-import puntoagil.dto.CambiarPasswordRequest;
+import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
+import puntoagil.dto.ResetPasswordRequest;
 import puntoagil.dto.UsuarioCreateRequest;
 import puntoagil.dto.UsuarioResponse;
 import puntoagil.dto.UsuarioUpdateRequest;
-import puntoagil.entity.Usuario;
 import puntoagil.service.UsuarioService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -17,51 +19,46 @@ import java.util.List;
 @PreAuthorize("hasRole('ADMIN')")
 public class UsuarioController {
 
-    private UsuarioService usuarioService;
+    private final UsuarioService usuarioService;
 
-    public UsuarioController(UsuarioService usuarioService){
+    public UsuarioController(UsuarioService usuarioService) {
         this.usuarioService = usuarioService;
     }
 
     @GetMapping
-    public ResponseEntity<List<UsuarioResponse>> listarTodos() {
-        List<UsuarioResponse> usuarios = usuarioService.listarTodos().stream()
-                .map(UsuarioResponse::desde)
-                .toList();
-        return ResponseEntity.ok(usuarios);
+    public List<UsuarioResponse> listarTodos() {
+        return usuarioService.listarTodos().stream().map(UsuarioResponse::desde).toList();
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<UsuarioResponse> buscarPorId(@PathVariable Long id) {
-        return ResponseEntity.ok(UsuarioResponse.desde(usuarioService.buscarPorId(id)));
+    public UsuarioResponse buscarPorId(@PathVariable Long id) {
+        return UsuarioResponse.desde(usuarioService.buscarPorId(id));
     }
 
     @PostMapping
-    public ResponseEntity<UsuarioResponse> crear(@RequestBody UsuarioCreateRequest request) {
-        Usuario usuario = new Usuario();
-        usuario.setNombre(request.nombre());
-        usuario.setEmail(request.email());
-        usuario.setPassword(request.password());
-        usuario.setRol(request.rol());
-        Usuario creado = usuarioService.registrar(usuario);
-        return ResponseEntity.ok(UsuarioResponse.desde(creado));
+    public ResponseEntity<UsuarioResponse> crear(@Valid @RequestBody UsuarioCreateRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(UsuarioResponse.desde(usuarioService.registrar(request)));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<UsuarioResponse> actualizar(@PathVariable Long id, @RequestBody UsuarioUpdateRequest request) {
-        Usuario actualizado = usuarioService.actualizar(id, request);
-        return ResponseEntity.ok(UsuarioResponse.desde(actualizado));
+    public UsuarioResponse actualizar(@PathVariable Long id,
+                                      @Valid @RequestBody UsuarioUpdateRequest request) {
+        return UsuarioResponse.desde(usuarioService.actualizar(id, request));
     }
 
     @PatchMapping("/{id}/estado")
-    public ResponseEntity<UsuarioResponse> cambiarEstado(@PathVariable Long id, @RequestParam boolean activo) {
-        Usuario actualizado = usuarioService.cambiarEstado(id, activo);
-        return ResponseEntity.ok(UsuarioResponse.desde(actualizado));
+    public UsuarioResponse cambiarEstado(@PathVariable Long id, @RequestParam boolean activo,
+                                         Authentication auth) {
+        return UsuarioResponse.desde(usuarioService.cambiarEstado(id, activo, auth.getName()));
     }
 
+    // El admin restablece la clave de otro usuario (sin pedir la actual)
     @PatchMapping("/{id}/password")
-    public ResponseEntity<Void> cambiarPassword(@PathVariable Long id, @RequestBody CambiarPasswordRequest request) {
-        usuarioService.cambiarPassword(id, request.passwordActual(), request.passwordNueva());
+    public ResponseEntity<Void> restablecerPassword(@PathVariable Long id,
+                                                    @Valid @RequestBody ResetPasswordRequest request,
+                                                    Authentication auth) {
+        usuarioService.restablecerPassword(id, request.passwordNueva(), auth.getName());
         return ResponseEntity.noContent().build();
     }
 }
