@@ -1,9 +1,6 @@
 package puntoagil.service;
 
-import puntoagil.entity.AperturaCaja;
-import puntoagil.entity.CorteCaja;
-import puntoagil.entity.Usuario;
-import puntoagil.entity.Venta;
+import puntoagil.entity.*;
 import puntoagil.repository.AperturaCajaRepository;
 import puntoagil.repository.CorteCajaRepository;
 import org.springframework.stereotype.Service;
@@ -43,15 +40,18 @@ public class CorteCajaService {
         for (Venta venta : ventasDelPeriodo) {
             totalVentas = totalVentas.add(venta.getTotal());
 
-            if (venta.getMetodoPago() == Venta.MetodoPago.EFECTIVO) {
-                totalVentasEfectivo = totalVentasEfectivo.add(venta.getTotal());
+            for (PagoVenta pago : venta.getPagos()) {
+                if (pago.getMetodoPago().getTipo() == MetodoPago.Tipo.EFECTIVO) {
+                    totalVentasEfectivo = totalVentasEfectivo.add(pago.getMonto());
+                }
             }
 
             for (var detalle : venta.getDetalles()) {
-                BigDecimal costoLinea = detalle.getProducto().getCosto()
-                        .multiply(BigDecimal.valueOf(detalle.getCantidad()));
-                BigDecimal utilidadLinea = detalle.getSubtotal().subtract(costoLinea);
-                totalUtilidad = totalUtilidad.add(utilidadLinea);
+                BigDecimal costoUnitario = detalle.getCostoUnitario() != null
+                        ? detalle.getCostoUnitario()
+                        : detalle.getProducto().getCosto();
+                BigDecimal costoLinea = costoUnitario.multiply(BigDecimal.valueOf(detalle.getCantidad()));
+                totalUtilidad = totalUtilidad.add(detalle.getSubtotal().subtract(costoLinea));
             }
         }
 

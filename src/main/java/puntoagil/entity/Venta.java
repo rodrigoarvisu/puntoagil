@@ -14,10 +14,6 @@ public class Venta {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    public enum MetodoPago {
-        EFECTIVO, TARJETA, TRANSFERENCIA
-    }
-
     @ManyToOne
     @JoinColumn(name = "usuario_id", nullable = false)
     private Usuario usuario;
@@ -28,12 +24,14 @@ public class Venta {
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal total;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "metodo_pago", nullable = false)
-    private MetodoPago metodoPago;
+    @Column(name = "clave_idempotencia", length = 64)
+    private String claveIdempotencia;
 
     @OneToMany(mappedBy = "venta", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<DetalleVenta> detalles = new ArrayList<>();
+
+    @OneToMany(mappedBy = "venta", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<PagoVenta> pagos = new ArrayList<>();
 
     public Venta() {}
 
@@ -49,9 +47,12 @@ public class Venta {
     public BigDecimal getTotal() { return total; }
     public void setTotal(BigDecimal total) { this.total = total; }
 
+    public String getClaveIdempotencia() { return claveIdempotencia; }
+    public void setClaveIdempotencia(String c) { this.claveIdempotencia = c; }
+
     public List<DetalleVenta> getDetalles() { return detalles; }
     public void setDetalles(List<DetalleVenta> detalles) { this.detalles = detalles; }
 
-    public MetodoPago getMetodoPago() { return metodoPago; }
-    public void setMetodoPago(MetodoPago metodoPago) { this.metodoPago = metodoPago; }
+    public List<PagoVenta> getPagos() { return pagos; }
+    public void setPagos(List<PagoVenta> pagos) { this.pagos = pagos; }
 }
