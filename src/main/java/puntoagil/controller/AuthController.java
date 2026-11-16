@@ -1,5 +1,8 @@
 package puntoagil.controller;
 
+import io.jsonwebtoken.Claims;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import puntoagil.dto.LoginResponse;
 import puntoagil.entity.Usuario;
 import puntoagil.repository.UsuarioRepository;
@@ -9,6 +12,8 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -45,6 +50,26 @@ public class AuthController {
         );
 
         return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/renovar")
+    public ResponseEntity<Map<String, String>> renovar(
+            @RequestHeader(HttpHeaders.AUTHORIZATION) String authHeader,
+            Authentication auth) {
+
+        Claims claims = jwtUtil.validar(authHeader.substring(7)).orElse(null);
+        if (claims == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("mensaje", "Sesión no válida o expirada"));
+        }
+
+        long inicio = jwtUtil.inicioSesion(claims);
+        if (jwtUtil.sesionAgotada(inicio)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("mensaje", "La sesión alcanzó su duración máxima. Inicia sesión de nuevo"));
+        }
+
+        return ResponseEntity.ok(Map.of("token", jwtUtil.generarToken(auth.getName(), inicio)));
     }
 
     public record LoginRequest(String email, String password) {}
