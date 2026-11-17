@@ -1,17 +1,18 @@
 package puntoagil.controller;
 
-import io.jsonwebtoken.Claims;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import puntoagil.dto.LoginResponse;
-import puntoagil.entity.Usuario;
-import puntoagil.repository.UsuarioRepository;
-import puntoagil.security.JwtUtil;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.annotation.*;
+import puntoagil.dto.LoginResponse;
+import puntoagil.dto.TokenResponse;
+import puntoagil.exception.SesionNoRenovableException;
+import puntoagil.service.AuthService;
 
 import java.util.Map;
 
@@ -19,58 +20,39 @@ import java.util.Map;
 @RequestMapping("/api/auth")
 public class AuthController {
 
-    private AuthenticationManager authenticationManager;
-    private UsuarioRepository usuarioRepository;
-    private JwtUtil jwtUtil;
+    private final AuthService authService;
 
-    public AuthController( AuthenticationManager authenticationManager,
-                           UsuarioRepository usuarioRepository,
-                           JwtUtil jwtUtil) {
-        this.authenticationManager = authenticationManager;
-        this. usuarioRepository = usuarioRepository;
-        this. jwtUtil = jwtUtil;
+    public AuthController(AuthService authService) {
+        this.authService = authService;
     }
 
     @PostMapping("/login")
-    public ResponseEntity<LoginResponse> login(@RequestBody LoginRequest request) {
-        Authentication auth = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(request.email(), request.password())
-        );
-
-        Usuario usuario = usuarioRepository.findByEmailIgnoreCase(request.email())
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
-
-        String token = jwtUtil.generarToken(usuario.getEmail());
-
-        LoginResponse response = new LoginResponse(
-                token,
-                usuario.getId(),
-                usuario.getNombre(),
-                usuario.getRol().name()
-        );
-
-        return ResponseEntity.ok(response);
+    public LoginResponse login(@Valid @RequestBody LoginRequest request) {
+        return authService.login(request.email(), request.password());
     }
 
     @PostMapping("/renovar")
-    public ResponseEntity<Map<String, String>> renovar(
-            @RequestHeader(HttpHeaders.AUTHORIZATION) String authHeader,
-            Authentication auth) {
-
-        Claims claims = jwtUtil.validar(authHeader.substring(7)).orElse(null);
-        if (claims == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(Map.of("mensaje", "Sesión no válida o expirada"));
-        }
-
-        long inicio = jwtUtil.inicioSesion(claims);
-        if (jwtUtil.sesionAgotada(inicio)) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(Map.of("mensaje", "La sesión alcanzó su duración máxima. Inicia sesión de nuevo"));
-        }
-
-        return ResponseEntity.ok(Map.of("token", jwtUtil.generarToken(auth.getName(), inicio)));
+    public TokenResponse renovar(@RequestHeader(HttpHeaders.AUTHORIZATION) String authHeader,
+                                 Authentication auth) {
+        String token = authHeader.substring(7); // el filtro ya comprobó que empieza con "Bearer "
+        return new TokenResponse(authService.renovarToken(token, auth.getName()));
     }
 
-    public record LoginRequest(String email, String password) {}
+    // Cualquier fallo de autenticación (contraseña mala, usuario inexistente,
+    // cuenta desactivada) responde exactamente lo mismo.
+    @ExceptionHandler(AuthenticationException.class)
+    public ResponseEntity<Map<String, String>> credencialesInvalidas() {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(Map.of("mensaje", "Email o contraseña incorrectos"));
+    }
+
+    @ExceptionHandler(SesionNoRenovableException.class)
+    public ResponseEntity<Map<String, String>> sesionNoRenovable(SesionNoRenovableException e) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(Map.of("mensaje", e.getMessage()));
+    }
+
+    public record LoginRequest(
+            @NotBlank @Email String email,
+            @NotBlank String password) {}
 }
